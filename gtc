@@ -1,0 +1,37 @@
+#!/usr/local/bin/groovy
+@GrabResolver(name='glycoinfo', root='http://nexus.glycoinfo.org/content/groups/public/')
+@GrabResolver(name='glycoinfo-snapshots', root='http://nexus.glycoinfo.org/content/repositories/snapshots/')
+@Grab('org.glytoucan:client:1.2.5-TOCO-SNAPSHOT')
+import org.glytoucan.client.AntiSpringJavaRest
+
+def cli = new CliBuilder(
+   usage: 'gtc -s sequence or -c csvFileName -u contributorId -a apiKey ',
+   header: '\nAvailable options (use -h for help):\n',
+   footer: '\nInformation provided via above options is used to generate printed string.\n')
+import org.apache.commons.cli.Option
+cli.with
+{
+   h(longOpt: 'help', 'usage information', required: false)
+   s(longOpt: 'sequence', 'glycan structure sequence', args: 1, required: false)
+   c(longOpt: 'csvFileName', 'CSV file name', args: 1, required: false)
+   u(longOpt: 'contributorId', 'Contribuor Id', required: true)
+   a(longOpt: 'apiKey', 'API Key', required: true)
+}
+def opt = cli.parse(args)
+
+if (!opt) return
+if (opt.h) cli.usage()
+
+def sequence = opt.s
+def csvFileName = opt.c
+def contributorId = opt.u
+def apiKey = opt.a
+
+if (sequence != null) {
+	println "Registering :>${sequence}<"
+	def asjr = new AntiSpringJavaRest()
+	String result = asjr.register('Gal')
+
+	println "Accession Number of ${sequence} is ${result}";
+}
+if (printOptions) println cli.options
