@@ -1,4 +1,4 @@
-#!/usr/local/bin/groovy
+#!/usr/bin/groovy
 @GrabResolver(name='glycoinfo', root='http://nexus.glycoinfo.org/content/groups/public/')
 @GrabResolver(name='glycoinfo-snapshots', root='http://nexus.glycoinfo.org/content/repositories/snapshots/')
 @Grab('org.glytoucan:client:1.2.5-TOCO-SNAPSHOT')
@@ -14,8 +14,8 @@ cli.with
    h(longOpt: 'help', 'usage information', required: false)
    s(longOpt: 'sequence', 'glycan structure sequence', args: 1, required: false)
    c(longOpt: 'csvFileName', 'CSV file name', args: 1, required: false)
-   u(longOpt: 'contributorId', 'Contribuor Id', required: true)
-   a(longOpt: 'apiKey', 'API Key', required: true)
+   u(longOpt: 'contributorId', 'Contribuor Id', args: 1, required: true)
+   a(longOpt: 'apiKey', 'API Key', args: 1, required: true)
 }
 def opt = cli.parse(args)
 
@@ -29,9 +29,12 @@ def apiKey = opt.a
 
 if (sequence != null) {
 	println "Registering :>${sequence}<"
+	println "User:>${contributorId}<"
+	println "ApiKey:>${apiKey}<"
 	def asjr = new AntiSpringJavaRest()
-	String result = asjr.register('Gal')
+	String result = asjr.register(sequence, contributorId, apiKey)
 
 	println "Accession Number of ${sequence} is ${result}";
 }
-if (printOptions) println cli.options
+
+//if (printOptions) println cli.options
