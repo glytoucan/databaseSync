@@ -73,15 +73,27 @@ if (csvFileName) {
 	for (Expando mapLine : listing) {
 		Map props = mapLine.getProperties();
 		for (fieldProp in props) {
-  			println "column " + fieldProp.key
-			println "Registering sequence: " + fieldProp.value
-			if (partnerId) {
-				println "Partner Id: ${partnerId}"
-				result = asjr.register(fieldProp.value, partnerId, contributorId, apiKey)
-			} else {
-				result = asjr.register(fieldProp.value, contributorId, apiKey)
-			}
-			println "Accession Number of ${fieldProp.value} is ${result}";
+      println "Read column: " + fieldProp.key
+      if (fieldProp.key.toLowerCase().equals("sequence")) {
+        sequence = fieldProp.value 
+        println "Read sequence: " + sequence
+      }
+      if (fieldProp.key.toLowerCase().equals("id")) {
+        partnerId = fieldProp.value 
+        println "Read partnerId: " + partnerId
+      }
 		}
+    if (sequence) {
+        println "Registering sequence: " + sequence
+			  if (partnerId) {
+				println "Partner Id: ${partnerId}"
+		    result = asjr.register(sequence, partnerId, contributorId, apiKey)
+  			} else {
+		    result = asjr.register(sequence, contributorId, apiKey)
+  			}
+	println "Accession Number of ${sequence} is ${result}";
+        partnerId = false;
+        sequence = false;
+    }
 	}
 }
