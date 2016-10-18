@@ -34,18 +34,18 @@ def partnerId = opt.p
 def oFormat= opt.o
 def asjr = new AntiSpringJavaRest()
 
-if (oFormat != 'tsv') {
+if (oFormat != 'tsv' && oFormat != 'csv') {
   println "User ID: ${contributorId}"
   println "Api Key: ${apiKey}"
 }
 
 if (sequence) {
-        if (oFormat != 'tsv') {
+        if (oFormat != 'tsv' && oFormat != 'csv') {
           println "Registering sequence: ${sequence}"
         }
         String result;
         if (partnerId) {
-            if (oFormat != 'tsv') {
+            if (oFormat != 'tsv' && oFormat != 'csv') {
                 println "Partner Id: ${partnerId}"
             }
             result = asjr.register(sequence, partnerId, contributorId, apiKey)
@@ -56,6 +56,9 @@ if (sequence) {
         if (oFormat == 'tsv') {
           println "${result}\t${sequence}";
         }
+        else if (oFormat == 'csv') {
+          println "\"${result}\",\"${sequence}\"";
+        }
         else {
           println "Accession Number of ${sequence} is ${result}";
         }
@@ -64,7 +67,7 @@ import org.apache.commons.csv.CSVParser
 import static org.apache.commons.csv.CSVFormat.*
 import java.nio.file.Paths
 if (csvFileName) {
-        if (oFormat != 'tsv') {
+        if (oFormat != 'tsv' && oFormat != 'csv') {
           println "Reading file: ${csvFileName}"
         }
         
@@ -80,7 +83,7 @@ if (csvFileName) {
                 Map props = mapLine.getProperties();
                 for (fieldProp in props) {
                         
-                        if (oFormat != 'tsv') {
+                        if (oFormat != 'tsv' && oFormat != 'csv') {
                           println "column " + fieldProp.key
                           println "Registering sequence: " + fieldProp.value
                         }
@@ -99,6 +102,9 @@ if (csvFileName) {
                         
                         if (oFormat == 'tsv') {
                           println "${result}\t${fieldProp.value}";
+                        }
+                        else if (oFormat == 'csv') {
+                          println "\"${result}\",\"${fieldProp.value}\"";
                         }
                         else {
                           println "Accession Number of ${fieldProp.value} is ${result}";
