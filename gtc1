@@ -21,6 +21,7 @@ cli.with
    u(longOpt: 'contributorId', 'Contribuor Id', args: 1, required: true)
    a(longOpt: 'apiKey', 'API Key', args: 1, required: true)
    p(longOpt: 'partnerId', 'partnerId', args: 1, required: false)
+   o(longOpt: 'outputFormat', 'output format', args: 1, required: false)
 }
 def opt = cli.parse(args)
 if (!opt) return
@@ -30,25 +31,43 @@ def csvFileName = opt.c
 def contributorId = opt.u
 def apiKey = opt.a
 def partnerId = opt.p
+def oFormat= opt.o
 def asjr = new AntiSpringJavaRest()
-//println "User ID: ${contributorId}"
-//println "Api Key: ${apiKey}"
+
+if (oFormat != 'tsv') {
+  println "User ID: ${contributorId}"
+  println "Api Key: ${apiKey}"
+}
+
 if (sequence) {
-        //println "Registering sequence: ${sequence}"
+        if (oFormat != 'tsv') {
+          println "Registering sequence: ${sequence}"
+        }
         String result;
         if (partnerId) {
-                //println "Partner Id: ${partnerId}"
-                result = asjr.register(sequence, partnerId, contributorId, apiKey)
+            if (oFormat != 'tsv') {
+                println "Partner Id: ${partnerId}"
+            }
+            result = asjr.register(sequence, partnerId, contributorId, apiKey)
         } else {
-                result = asjr.register(sequence, contributorId, apiKey)
+            result = asjr.register(sequence, contributorId, apiKey)
         }
-        println "${result}\t${sequence}";
+        
+        if (oFormat == 'tsv') {
+          println "${result}\t${sequence}";
+        }
+        else {
+          println "Accession Number of ${sequence} is ${result}";
+        }
 }
 import org.apache.commons.csv.CSVParser
 import static org.apache.commons.csv.CSVFormat.*
 import java.nio.file.Paths
 if (csvFileName) {
-        //println "Reading file: ${csvFileName}"
+        if (oFormat != 'tsv') {
+          println "Reading file: ${csvFileName}"
+        }
+        
         def listing = []
         Paths.get(csvFileName).withReader { reader ->
             CSVParser csv = new CSVParser(reader, DEFAULT.withHeader())
@@ -60,15 +79,30 @@ if (csvFileName) {
         for (Expando mapLine : listing) {
                 Map props = mapLine.getProperties();
                 for (fieldProp in props) {
-                          //println "column " + fieldProp.key
-                        //println "Registering sequence: " + fieldProp.value
+                        
+                        if (oFormat != 'tsv') {
+                          println "column " + fieldProp.key
+                          println "Registering sequence: " + fieldProp.value
+                        }
+
                         if (partnerId) {
-                        //        println "Partner Id: ${partnerId}"
+                            if (!oFormat) {
+                                println "Partner Id: ${partnerId}"
+                            }
+
                                 result = asjr.register(fieldProp.value, partnerId, contributorId, apiKey)
                         } else {
                                 result = asjr.register(fieldProp.value, contributorId, apiKey)
                         }
-                        println "${result}\t${fieldProp.value}";
+
+
+                        
+                        if (oFormat == 'tsv') {
+                          println "${result}\t${fieldProp.value}";
+                        }
+                        else {
+                          println "Accession Number of ${fieldProp.value} is ${result}";
+                        }
                 }
         }
 }
