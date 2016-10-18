@@ -64,51 +64,85 @@ if (sequence) {
         }
 }
 import org.apache.commons.csv.CSVParser
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVRecord;
 import static org.apache.commons.csv.CSVFormat.*
 import java.nio.file.Paths
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.util.List;
+
+
 if (csvFileName) {
-        if (oFormat != 'tsv' && oFormat != 'csv') {
-          println "Reading file: ${csvFileName}"
-        }
-        
-        def listing = []
-        Paths.get(csvFileName).withReader { reader ->
-            CSVParser csv = new CSVParser(reader, DEFAULT.withHeader())
- 
-            for (record in csv.iterator()) {
-                listing << (record.toMap() as Expando)
+
+    if (oFormat != 'tsv' && oFormat != 'csv') {
+      println "Reading file: ${csvFileName}"
+    }
+    
+    List<CSVRecord> recordList = new ArrayList<CSVRecord>();
+    try {
+
+      Paths.get(csvFileName).withReader { reader ->
+          CSVParser csv = new CSVParser(reader, DEFAULT.withHeader())
+
+          for (record in csv.iterator()) {
+              recordList.push(record)
+          }
+      }
+
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    for (CSVRecord record : recordList) {
+
+            if (record.size() == 2) {
+
+                partnerDBId = record.get(0)
+                sequence = record.get(1)
+                
+                if (oFormat != 'tsv' && oFormat != 'csv') {
+                  println "\t" + "contributorId" + "\t" + contributorId
+                  println "\t" + "apiKey" + "\t" + apiKey
+                  println "\t" + partnerDBId + "\t" + sequence
+                  println "Read sequence: " + sequence
+                  println "Read partnerDBId: " + partnerDBId
                 }
-        }
-        for (Expando mapLine : listing) {
-                Map props = mapLine.getProperties();
-                for (fieldProp in props) {
-                        
+              
+                if (sequence) {
+
+                    if (oFormat != 'tsv' && oFormat != 'csv') {
+                        println "Registering sequence: " + sequence
+                    }  
+
+                    if (partnerId) {
                         if (oFormat != 'tsv' && oFormat != 'csv') {
-                          println "column " + fieldProp.key
-                          println "Registering sequence: " + fieldProp.value
+                            println "Partner Id: ${partnerId}"
                         }
 
-                        if (partnerId) {
-                            if (!oFormat) {
-                                println "Partner Id: ${partnerId}"
-                            }
-
-                                result = asjr.register(fieldProp.value, partnerId, contributorId, apiKey)
-                        } else {
-                                result = asjr.register(fieldProp.value, contributorId, apiKey)
-                        }
+                        result = asjr.register(sequence, partnerId, contributorId, apiKey)
+                    }
+                    else {
+                        result = asjr.register(sequence, contributorId, apiKey)
+                    }
 
 
-                        
-                        if (oFormat == 'tsv') {
-                          println "${result}\t${fieldProp.value}";
-                        }
-                        else if (oFormat == 'csv') {
-                          println "\"${result}\",\"${fieldProp.value}\"";
-                        }
-                        else {
-                          println "Accession Number of ${fieldProp.value} is ${result}";
-                        }
+                    
+                    if (oFormat == 'tsv') {
+                      println "${partnerDBId}\t${result}\t${sequence}";
+                    }
+                    else if (oFormat == 'csv') {
+                      println "\"${partnerDBId}\",\"${result}\",\"${sequence}\"";
+                    }
+                    else {
+                      println "Accession Number of ${partnerDBId} (WURCS: ${sequence}) is ${result}";
+                    }
                 }
-        }
+            }
+            partnerDBId = false;
+            sequence = false;
+              
+        //}
+    }
 }
