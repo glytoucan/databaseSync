@@ -9,7 +9,7 @@
 @Grab('org.apache.commons:commons-csv:1.2')
 import org.glytoucan.client.AntiSpringJavaRest
 def cli = new CliBuilder(
-   usage: 'gtc -s sequence or -c csvFileName -u contributorId -a apiKey ',
+   usage: 'gtc -s sequence or -c csvFileName -u contributorId -a apiKey -o outputFormat ',
    header: '\nAvailable options (use -h for help):\n',
    footer: '\nInformation provided via above options is used to generate printed string.\n')
 import org.apache.commons.cli.Option
@@ -22,6 +22,7 @@ cli.with
    a(longOpt: 'apiKey', 'API Key', args: 1, required: true)
    p(longOpt: 'partnerId', 'partnerId', args: 1, required: false)
    o(longOpt: 'outputFormat', 'output format', args: 1, required: false)
+   t(longOpt: 'tsvFileName', 'TSV file name', args: 1, required: false)
 }
 def opt = cli.parse(args)
 if (!opt) return
@@ -31,7 +32,8 @@ def csvFileName = opt.c
 def contributorId = opt.u
 def apiKey = opt.a
 def partnerId = opt.p
-def oFormat= opt.o
+def oFormat = opt.o
+def tsvFileName = opt.t
 def asjr = new AntiSpringJavaRest()
 
 if (oFormat != 'tsv' && oFormat != 'csv') {
@@ -73,34 +75,48 @@ import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.List;
 
+final def TAB = '\t'
 
-if (csvFileName) {
+if ((csvFileName) || (tsvFileName)) {
 
     if (oFormat != 'tsv' && oFormat != 'csv') {
       println "Reading file: ${csvFileName}"
     }
     
-    List<CSVRecord> recordList = new ArrayList<CSVRecord>();
+    //List<CSVRecord> recordList = new ArrayList<CSVRecord>();
+    List<List<String>> glycanList = new ArrayList<ArrayList<String>>();
     try {
 
-      Paths.get(csvFileName).withReader { reader ->
-          CSVParser csv = new CSVParser(reader, DEFAULT.withHeader())
+        if (csvFileName) { 
+            Paths.get(csvFileName).withReader { reader ->
+            CSVParser csv = new CSVParser(reader, DEFAULT.withHeader())
 
-          for (record in csv.iterator()) {
-              recordList.push(record)
-          }
-      }
+                for (record in csv.iterator()) {
+                    //recordList.push(record)
+                    glycanList.push( [record.get(0), record.get(1) ] )
+                }
+            }
+        }
+        if (tsvFileName) { 
+            new File(tsvFileName).eachWithIndex {
+                String line, int i -> 
+                if (i == 0) { return }
+                else {
+                    glycanList.push( [ line.split(TAB)[0], line.split(TAB)[1] ])
+                }
+            }
+        }
 
     } catch (IOException e) {
       e.printStackTrace();
     }
 
-    for (CSVRecord record : recordList) {
+    for (List<String> glycan : glycanList) {
 
-            if (record.size() == 2) {
+            if (glycan.size() == 2) {
 
-                partnerDBId = record.get(0)
-                sequence = record.get(1)
+                partnerDBId = glycan[0]
+                sequence = glycan[1]
                 
                 if (oFormat != 'tsv' && oFormat != 'csv') {
                   println "\t" + "contributorId" + "\t" + contributorId
@@ -142,7 +158,5 @@ if (csvFileName) {
             }
             partnerDBId = false;
             sequence = false;
-              
-        //}
     }
 }
