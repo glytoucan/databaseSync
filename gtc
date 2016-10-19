@@ -56,13 +56,28 @@ if (sequence) {
         }
         
         if (oFormat == 'tsv') {
-          println "${result}\t${sequence}";
+            if (partnerId) {
+                println "${result}\t${partnerId}\t${sequence}";
+            }
+            else {
+                println "${result}\t${sequence}";
+            }
         }
         else if (oFormat == 'csv') {
-          println "\"${result}\",\"${sequence}\"";
+          if (partnerId) {
+                println "\"${result}\",\"${partnerId}\",\"${sequence}\"";
+          }
+          else {
+                println "\"${result}\",\"${sequence}\"";
+          }
         }
         else {
-          println "Accession Number of ${sequence} is ${result}";
+          if (partnerId) {  
+                println "Accession Number of ${partnerId}: ${sequence} is ${result}";
+          }
+          else {
+                println "Accession Number of ${sequence} is ${result}";
+          }
         }
 }
 import org.apache.commons.csv.CSVParser
@@ -80,10 +95,14 @@ final def TAB = '\t'
 if ((csvFileName) || (tsvFileName)) {
 
     if (oFormat != 'tsv' && oFormat != 'csv') {
-      println "Reading file: ${csvFileName}"
+      if (oFormat == 'csv') {
+        println "Reading file: ${csvFileName}"
+      }
+      if (oFormat == 'tsv') {
+        println "Reading file: ${tsvFileName}"
+      }
     }
     
-    //List<CSVRecord> recordList = new ArrayList<CSVRecord>();
     List<List<String>> glycanList = new ArrayList<ArrayList<String>>();
     try {
 
@@ -92,8 +111,12 @@ if ((csvFileName) || (tsvFileName)) {
             CSVParser csv = new CSVParser(reader, DEFAULT.withHeader())
 
                 for (record in csv.iterator()) {
-                    //recordList.push(record)
-                    glycanList.push( [record.get(0), record.get(1) ] )
+                    if (record.size() == 2) {
+                        glycanList.push( [record.get(0), record.get(1) ] )
+                    }
+                    else if (record.size() == 1) {
+                        glycanList.push( [record.get(0) ] )
+                    }
                 }
             }
         }
@@ -102,7 +125,14 @@ if ((csvFileName) || (tsvFileName)) {
                 String line, int i -> 
                 if (i == 0) { return }
                 else {
-                    glycanList.push( [ line.split(TAB)[0], line.split(TAB)[1] ])
+
+                    contents = line.split(TAB) 
+                    if (contents.size() == 2) {
+                        glycanList.push( [ contents[0], contents[1] ])
+                    }
+                    else if (contents.size() == 1) {
+                        glycanList.push( [ contents[0] ])
+                    }
                 }
             }
         }
@@ -115,15 +145,21 @@ if ((csvFileName) || (tsvFileName)) {
 
             if (glycan.size() == 2) {
 
-                partnerDBId = glycan[0]
+                partnerId = glycan[0]
                 sequence = glycan[1]
+            }
+            if (glycan.size() == 1) {
+                sequence = glycan[0]
+            }
+            
+
                 
                 if (oFormat != 'tsv' && oFormat != 'csv') {
                   println "\t" + "contributorId" + "\t" + contributorId
                   println "\t" + "apiKey" + "\t" + apiKey
-                  println "\t" + partnerDBId + "\t" + sequence
+                  //println "\t" + partnerId + "\t" + sequence
                   println "Read sequence: " + sequence
-                  println "Read partnerDBId: " + partnerDBId
+                  //println "Read partnerDBId: " + partnerDBId
                 }
               
                 if (sequence) {
@@ -137,26 +173,51 @@ if ((csvFileName) || (tsvFileName)) {
                             println "Partner Id: ${partnerId}"
                         }
 
-                        result = asjr.register(sequence, partnerId, contributorId, apiKey)
+                        try {
+                            result = asjr.register(sequence, partnerId, contributorId, apiKey)
+                        }
+                        catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                     else {
-                        result = asjr.register(sequence, contributorId, apiKey)
+                        try {
+                            result = asjr.register(sequence, contributorId, apiKey)
+                        } 
+                        catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
 
 
                     
                     if (oFormat == 'tsv') {
-                      println "${partnerDBId}\t${result}\t${sequence}";
+                         if (partnerId) {
+                                println "${partnerId}\t${result}\t${sequence}";
+                         }
+                         else {
+                                println "${result}\t${sequence}";
+                         }
                     }
                     else if (oFormat == 'csv') {
-                      println "\"${partnerDBId}\",\"${result}\",\"${sequence}\"";
+                        if (partnerId) {
+                                println "\"${partnerId}\",\"${result}\",\"${sequence}\"";
+                        }
+                        else {
+                                println "\"${result}\",\"${sequence}\"";
+                        }
                     }
                     else {
-                      println "Accession Number of ${partnerDBId} (WURCS: ${sequence}) is ${result}";
+                        if (partnerId) {
+                            println "Accession Number of ${partnerId} (WURCS: ${sequence}) is ${result}";
+                        }
+                        else {
+                            println "Accession Number of ${sequence} is ${result}";
+                        }
                     }
                 }
-            }
-            partnerDBId = false;
+            //}
+            partnerId = false;
             sequence = false;
     }
 }
