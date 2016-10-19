@@ -57,26 +57,26 @@ if (sequence) {
         
         if (oFormat == 'tsv') {
             if (partnerId) {
-                println "${result}\t${partnerId}\t${sequence}";
+                println "${result}\t${partnerId}\t${sequence}"
             }
             else {
-                println "${result}\t${sequence}";
+                println "${result}\t${sequence}"
             }
         }
         else if (oFormat == 'csv') {
           if (partnerId) {
-                println "\"${result}\",\"${partnerId}\",\"${sequence}\"";
+                println "\"${result}\",\"${partnerId}\",\"${sequence}\""
           }
           else {
-                println "\"${result}\",\"${sequence}\"";
+                println "\"${result}\",\"${sequence}\""
           }
         }
         else {
           if (partnerId) {  
-                println "Accession Number of ${partnerId}: ${sequence} is ${result}";
+                println "Accession Number of ${partnerId}: ${sequence} is ${result}"
           }
           else {
-                println "Accession Number of ${sequence} is ${result}";
+                println "Accession Number of ${sequence} is ${result}"
           }
         }
 }
@@ -157,9 +157,7 @@ if ((csvFileName) || (tsvFileName)) {
                 if (oFormat != 'tsv' && oFormat != 'csv') {
                   println "\t" + "contributorId" + "\t" + contributorId
                   println "\t" + "apiKey" + "\t" + apiKey
-                  //println "\t" + partnerId + "\t" + sequence
                   println "Read sequence: " + sequence
-                  //println "Read partnerDBId: " + partnerDBId
                 }
               
                 if (sequence) {
@@ -188,36 +186,33 @@ if ((csvFileName) || (tsvFileName)) {
                             e.printStackTrace();
                         }
                     }
-
-
                     
                     if (oFormat == 'tsv') {
                          if (partnerId) {
-                                println "${partnerId}\t${result}\t${sequence}";
+                                println "${partnerId}\t${result}\t${sequence}"
                          }
                          else {
-                                println "${result}\t${sequence}";
+                                println "${result}\t${sequence}"
                          }
                     }
                     else if (oFormat == 'csv') {
                         if (partnerId) {
-                                println "\"${partnerId}\",\"${result}\",\"${sequence}\"";
+                                println "\"${partnerId}\",\"${result}\",\"${sequence}\""
                         }
                         else {
-                                println "\"${result}\",\"${sequence}\"";
+                                println "\"${result}\",\"${sequence}\""
                         }
                     }
                     else {
                         if (partnerId) {
-                            println "Accession Number of ${partnerId} (WURCS: ${sequence}) is ${result}";
+                            println "Accession Number of ${partnerId} (WURCS: ${sequence}) is ${result}"
                         }
                         else {
-                            println "Accession Number of ${sequence} is ${result}";
+                            println "Accession Number of ${sequence} is ${result}"
                         }
                     }
                 }
-            //}
-            partnerId = false;
-            sequence = false;
+            partnerId = false
+            sequence = false
     }
 }
