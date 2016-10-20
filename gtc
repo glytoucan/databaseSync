@@ -9,7 +9,7 @@
 @Grab('org.apache.commons:commons-csv:1.2')
 import org.glytoucan.client.AntiSpringJavaRest
 def cli = new CliBuilder(
-   usage: 'gtc -s sequence or -c csvFileName -u contributorId -a apiKey -o outputFormat ',
+   usage: 'gtc -s sequence or -c csvFileName -u contributorId -a apiKey -o outputFormat -m uaf',
    header: '\nAvailable options (use -h for help):\n',
    footer: '\nInformation provided via above options is used to generate printed string.\n')
 import org.apache.commons.cli.Option
@@ -21,8 +21,11 @@ cli.with
    u(longOpt: 'contributorId', 'Contribuor Id', args: 1, required: true)
    a(longOpt: 'apiKey', 'API Key', args: 1, required: true)
    p(longOpt: 'partnerId', 'partnerId', args: 1, required: false)
-   o(longOpt: 'outputFormat', 'output format', args: 1, required: false)
+   // '-o tsv'' or '-o csv''
+   o(longOpt: 'outputFormat', 'output format: tsv or csv', args: 1, required: false)
    t(longOpt: 'tsvFileName', 'TSV file name', args: 1, required: false)
+   // '-m uaf'; u: contributorId, a: apiKey, f: csvFileName or tsvFileName
+   m(longOpt: 'output metadata', 'u: contributorId, a: apiKey, f: csvFileName or tsvFileName', args: 1, required: false)
 }
 def opt = cli.parse(args)
 if (!opt) return
@@ -34,11 +37,16 @@ def apiKey = opt.a
 def partnerId = opt.p
 def oFormat = opt.o
 def tsvFileName = opt.t
+def metadata = opt.m
 def asjr = new AntiSpringJavaRest()
 
-if (oFormat != 'tsv' && oFormat != 'csv') {
-  println "User ID: ${contributorId}"
-  println "Api Key: ${apiKey}"
+if (metadata){
+    if (metadata.contains('u')) {    
+    println "User ID: ${contributorId}"
+    }
+    if (metadata.contains('a')) {
+    println "Api Key: ${apiKey}"
+    }
 }
 
 if (sequence) {
@@ -94,15 +102,16 @@ final def TAB = '\t'
 
 if ((csvFileName) || (tsvFileName)) {
 
-    if (oFormat != 'tsv' && oFormat != 'csv') {
-      if (oFormat == 'csv') {
-        println "Reading file: ${csvFileName}"
-      }
-      if (oFormat == 'tsv') {
-        println "Reading file: ${tsvFileName}"
-      }
+    if (metadata){
+        if (metadata.contains('f')) { 
+        if (oFormat == 'csv') {
+            println "Reading file: ${csvFileName}"
+        }
+        else if (oFormat == 'tsv') {
+            println "Reading file: ${tsvFileName}"
+        }
+        }
     }
-    
     List<List<String>> glycanList = new ArrayList<ArrayList<String>>();
     try {
 
@@ -144,16 +153,13 @@ if ((csvFileName) || (tsvFileName)) {
     for (List<String> glycan : glycanList) {
 
             if (glycan.size() == 2) {
-
                 partnerId = glycan[0]
                 sequence = glycan[1]
             }
-            if (glycan.size() == 1) {
+            else if (glycan.size() == 1) {
                 sequence = glycan[0]
             }
-            
-
-                
+                            
                 if (oFormat != 'tsv' && oFormat != 'csv') {
                   println "\t" + "contributorId" + "\t" + contributorId
                   println "\t" + "apiKey" + "\t" + apiKey
