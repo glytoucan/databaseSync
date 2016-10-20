@@ -24,8 +24,9 @@ cli.with
    // '-o tsv'' or '-o csv''
    o(longOpt: 'outputFormat', 'output format: tsv or csv', args: 1, required: false)
    t(longOpt: 'tsvFileName', 'TSV file name', args: 1, required: false)
-   // '-m uaf'; u: contributorId, a: apiKey, f: csvFileName or tsvFileName
-   m(longOpt: 'output metadata', 'u: contributorId, a: apiKey, f: csvFileName or tsvFileName', args: 1, required: false)
+   // '-m uaf'; u: contributorId, a: apiKey, f: csvFileName or tsvFileName, h: header
+   // header = partnerId,Accession Number, sequence
+   m(longOpt: 'output metadata', 'u: contributorId, a: apiKey, f: csvFileName or tsvFileName, h: header', args: 1, required: false)
 }
 def opt = cli.parse(args)
 if (!opt) return
@@ -99,19 +100,10 @@ import java.nio.file.Path;
 import java.util.List;
 
 final def TAB = '\t'
-
+def bPartnerId = false
 if ((csvFileName) || (tsvFileName)) {
 
-    if (metadata){
-        if (metadata.contains('f')) { 
-        if (oFormat == 'csv') {
-            println "Reading file: ${csvFileName}"
-        }
-        else if (oFormat == 'tsv') {
-            println "Reading file: ${tsvFileName}"
-        }
-        }
-    }
+   
     List<List<String>> glycanList = new ArrayList<ArrayList<String>>();
     try {
 
@@ -138,6 +130,7 @@ if ((csvFileName) || (tsvFileName)) {
                     contents = line.split(TAB) 
                     if (contents.size() == 2) {
                         glycanList.push( [ contents[0], contents[1] ])
+                        bPartnerId = true
                     }
                     else if (contents.size() == 1) {
                         glycanList.push( [ contents[0] ])
@@ -150,6 +143,37 @@ if ((csvFileName) || (tsvFileName)) {
       e.printStackTrace();
     }
 
+
+    if (metadata){
+        if (metadata.contains('f')) { 
+            if (csvFileName) {
+                println "Reading file: ${csvFileName}"
+            }
+            else if (tsvFileName) {
+                println "Reading file: ${tsvFileName}"
+            }
+        }
+        if (metadata.contains('h')) {
+            if (oFormat == 'tsv') {
+                if (bPartnerId == true) {
+                    println "partnerId\tAccession Number\tsequence"
+                }
+                else if (bPartnerId == false) {
+                    println "Accession Number\tsequence"
+                }
+            }
+            else if (oFormat == 'csv') {
+                if (bPartnerId == true) {
+                    println "\"partnerId\",\"Accession Number\",\"sequence\""
+                }
+                else if (bPartnerId == false) {
+                    println "\"Accession Number\",\"sequence\""
+                }
+            }
+        }
+    }
+
+
     for (List<String> glycan : glycanList) {
 
             if (glycan.size() == 2) {
@@ -160,11 +184,11 @@ if ((csvFileName) || (tsvFileName)) {
                 sequence = glycan[0]
             }
                             
-                if (oFormat != 'tsv' && oFormat != 'csv') {
-                  println "\t" + "contributorId" + "\t" + contributorId
-                  println "\t" + "apiKey" + "\t" + apiKey
-                  println "Read sequence: " + sequence
-                }
+                //if (oFormat != 'tsv' && oFormat != 'csv') {
+                  //println "\t" + "contributorId" + "\t" + contributorId
+                  //println "\t" + "apiKey" + "\t" + apiKey
+                  //println "Read sequence: " + sequence
+                //}
               
                 if (sequence) {
 
@@ -211,7 +235,7 @@ if ((csvFileName) || (tsvFileName)) {
                     }
                     else {
                         if (partnerId) {
-                            println "Accession Number of ${partnerId} (WURCS: ${sequence}) is ${result}"
+                            println "Accession Number of ${partnerId} is ${result}"
                         }
                         else {
                             println "Accession Number of ${sequence} is ${result}"
