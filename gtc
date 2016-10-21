@@ -51,43 +51,57 @@ if (metadata){
 }
 
 if (sequence) {
+    if (oFormat != 'tsv' && oFormat != 'csv') {
+        println "Registering sequence: ${sequence}"
+    }
+    String result;
+    if (partnerId) {
         if (oFormat != 'tsv' && oFormat != 'csv') {
-          println "Registering sequence: ${sequence}"
+            println "Partner Id: ${partnerId}"
         }
-        String result;
-        if (partnerId) {
-            if (oFormat != 'tsv' && oFormat != 'csv') {
-                println "Partner Id: ${partnerId}"
-            }
+
+        try {
             result = asjr.register(sequence, partnerId, contributorId, apiKey)
-        } else {
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    } else {
+        
+        try {
             result = asjr.register(sequence, contributorId, apiKey)
+        } 
+        catch (Exception e) {
+            e.printStackTrace();
         }
         
-        if (oFormat == 'tsv') {
-            if (partnerId) {
-                println "${result}\t${partnerId}\t${sequence}"
-            }
-            else {
-                println "${result}\t${sequence}"
-            }
-        }
-        else if (oFormat == 'csv') {
-          if (partnerId) {
-                println "\"${result}\",\"${partnerId}\",\"${sequence}\""
-          }
-          else {
-                println "\"${result}\",\"${sequence}\""
-          }
+    }
+    
+    if (oFormat == 'tsv') {
+        if (partnerId) {
+            println "${result}\t${partnerId}\t${sequence}"
         }
         else {
-          if (partnerId) {  
-                println "Accession Number of ${partnerId}: ${sequence} is ${result}"
-          }
-          else {
-                println "Accession Number of ${sequence} is ${result}"
-          }
+            println "${result}\t${sequence}"
         }
+    }
+    else if (oFormat == 'csv') {
+        if (partnerId) {
+            println "\"${result}\",\"${partnerId}\",\"${sequence}\""
+        }
+        else {
+            println "\"${result}\",\"${sequence}\""
+        }
+    }
+    else {
+        if (partnerId) {  
+            println "Accession Number of ${partnerId}: ${sequence} is ${result}"
+        }
+        else {
+            println "Accession Number of ${sequence} is ${result}"
+        }
+    }
 }
 import org.apache.commons.csv.CSVParser
 import org.apache.commons.csv.CSVFormat;
@@ -176,73 +190,67 @@ if ((csvFileName) || (tsvFileName)) {
 
     for (List<String> glycan : glycanList) {
 
-            if (glycan.size() == 2) {
-                partnerId = glycan[0]
-                sequence = glycan[1]
-            }
-            else if (glycan.size() == 1) {
-                sequence = glycan[0]
-            }
-                            
-                //if (oFormat != 'tsv' && oFormat != 'csv') {
-                  //println "\t" + "contributorId" + "\t" + contributorId
-                  //println "\t" + "apiKey" + "\t" + apiKey
-                  //println "Read sequence: " + sequence
-                //}
-              
-                if (sequence) {
+        if (glycan.size() == 2) {
+            partnerId = glycan[0]
+            sequence = glycan[1]
+        }
+        else if (glycan.size() == 1) {
+            sequence = glycan[0]
+        }
 
-                    if (oFormat != 'tsv' && oFormat != 'csv') {
-                        println "Registering sequence: " + sequence
-                    }  
+        if (sequence) {
 
-                    if (partnerId) {
-                        if (oFormat != 'tsv' && oFormat != 'csv') {
-                            println "Partner Id: ${partnerId}"
-                        }
+            if (oFormat != 'tsv' && oFormat != 'csv') {
+                println "Registering sequence: " + sequence
+            }  
 
-                        try {
-                            result = asjr.register(sequence, partnerId, contributorId, apiKey)
-                        }
-                        catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    else {
-                        try {
-                            result = asjr.register(sequence, contributorId, apiKey)
-                        } 
-                        catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    
-                    if (oFormat == 'tsv') {
-                         if (partnerId) {
-                                println "${partnerId}\t${result}\t${sequence}"
-                         }
-                         else {
-                                println "${result}\t${sequence}"
-                         }
-                    }
-                    else if (oFormat == 'csv') {
-                        if (partnerId) {
-                                println "\"${partnerId}\",\"${result}\",\"${sequence}\""
-                        }
-                        else {
-                                println "\"${result}\",\"${sequence}\""
-                        }
-                    }
-                    else {
-                        if (partnerId) {
-                            println "Accession Number of ${partnerId} is ${result}"
-                        }
-                        else {
-                            println "Accession Number of ${sequence} is ${result}"
-                        }
-                    }
+            if (partnerId) {
+                if (oFormat != 'tsv' && oFormat != 'csv') {
+                    println "Partner Id: ${partnerId}"
                 }
-            partnerId = false
-            sequence = false
+
+                try {
+                    result = asjr.register(sequence, partnerId, contributorId, apiKey)
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            else {
+                try {
+                    result = asjr.register(sequence, contributorId, apiKey)
+                } 
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            
+            if (oFormat == 'tsv') {
+                    if (partnerId) {
+                        println "${partnerId}\t${result}\t${sequence}"
+                    }
+                    else {
+                        println "${result}\t${sequence}"
+                    }
+            }
+            else if (oFormat == 'csv') {
+                if (partnerId) {
+                        println "\"${partnerId}\",\"${result}\",\"${sequence}\""
+                }
+                else {
+                        println "\"${result}\",\"${sequence}\""
+                }
+            }
+            else {
+                if (partnerId) {
+                    println "Accession Number of ${partnerId} is ${result}"
+                }
+                else {
+                    println "Accession Number of ${sequence} is ${result}"
+                }
+            }
+        }
+        partnerId = false
+        sequence = false
     }
 }
