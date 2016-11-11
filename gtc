@@ -4,10 +4,11 @@
 //@Grab('org.glytoucan:client:1.2.5-TOCO-SNAPSHOT')
 @Grab( group='org.glytoucan',
        module='client',
-       version='1.2.5-TOCO-SNAPSHOT',
+       version='1.2.6-TOCO-SNAPSHOT',
        changing=true )
 @Grab('org.apache.commons:commons-csv:1.2')
 import org.glytoucan.client.AntiSpringJavaRest
+
 def cli = new CliBuilder(
    usage: 'gtc -s sequence or -c csvFileName -u contributorId -a apiKey -o outputFormat -m uaf',
    header: '\nAvailable options (use -h for help):\n',
@@ -20,10 +21,11 @@ cli.with
    c(longOpt: 'csvFileName', 'CSV file name', args: 1, required: false)
    u(longOpt: 'contributorId', 'Contribuor Id', args: 1, required: true)
    a(longOpt: 'apiKey', 'API Key', args: 1, required: true)
-   p(longOpt: 'partnerId', 'partnerId', args: 1, required: false)
+   p(longOpt: 'partnerId', 'partner accession number', args: 1, required: false)
    // '-o tsv'' or '-o csv''
    o(longOpt: 'outputFormat', 'output format: tsv or csv', args: 1, required: false)
    t(longOpt: 'tsvFileName', 'TSV file name', args: 1, required: false)
+   r(longOpt: 'remove', 'remove partner accession number', args: 1, required: false)
    // '-m uaf'; u: contributorId, a: apiKey, f: csvFileName or tsvFileName, h: header
    // header = partnerId,Accession Number, sequence
    m(longOpt: 'output metadata', 'u: contributorId, a: apiKey, f: csvFileName or tsvFileName, h: header', args: 1, required: false)
@@ -39,6 +41,7 @@ def partnerId = opt.p
 def oFormat = opt.o
 def tsvFileName = opt.t
 def metadata = opt.m
+def remove = opt.r
 def asjr = new AntiSpringJavaRest()
 
 if (metadata){
@@ -57,27 +60,37 @@ if (sequence) {
     String result;
     if (partnerId) {
         if (oFormat != 'tsv' && oFormat != 'csv') {
-            println "Partner Id: ${partnerId}"
+            println "Partner Accession Number: ${partnerId}"
         }
 
         try {
-            result = asjr.register(sequence, partnerId, contributorId, apiKey)
+          result = asjr.register(sequence, partnerId, contributorId, apiKey)
         }
         catch (Exception e) {
-            e.printStackTrace();
+          e.printStackTrace();
         }
 
     } else {
-        
         try {
             result = asjr.register(sequence, contributorId, apiKey)
         } 
         catch (Exception e) {
             e.printStackTrace();
         }
-        
     }
-    
+
+    if (remove) {
+      if (oFormat != 'tsv' && oFormat != 'csv') {
+         println "Removing partner Accession Number: ${remove}"
+      }
+      try {
+        result = asjr.removeId(sequence, remove, contributorId, apiKey)
+      }
+      catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+
     if (oFormat == 'tsv') {
         if (partnerId) {
             println "${result}\t${partnerId}\t${sequence}"
