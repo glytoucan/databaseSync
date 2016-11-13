@@ -25,7 +25,7 @@ cli.with
    // '-o tsv'' or '-o csv''
    o(longOpt: 'outputFormat', 'output format: tsv or csv', args: 1, required: false)
    t(longOpt: 'tsvFileName', 'TSV file name', args: 1, required: false)
-   r(longOpt: 'remove', 'remove partner accession number', args: 1, required: false)
+   r(longOpt: 'remove', 'remove partner accession number. if use data in a file, -r file', args: 1, required: false)
    // '-m uaf'; u: contributorId, a: apiKey, f: csvFileName or tsvFileName, h: header
    // header = partnerId,Accession Number, sequence
    m(longOpt: 'output metadata', 'u: contributorId, a: apiKey, f: csvFileName or tsvFileName, h: header', args: 1, required: false)
@@ -41,7 +41,7 @@ def partnerId = opt.p
 def oFormat = opt.o
 def tsvFileName = opt.t
 def metadata = opt.m
-def remove = opt.r
+def removePartnerId = opt.r
 def asjr = new AntiSpringJavaRest()
 
 if (metadata){
@@ -79,12 +79,12 @@ if (sequence) {
         }
     }
 
-    if (remove) {
+    if (removePartnerId) {
       if (oFormat != 'tsv' && oFormat != 'csv') {
-         println "Removing partner Accession Number: ${remove}"
+         println "Removing partner Accession Number: ${removePartnerId}"
       }
       try {
-        result = asjr.removeId(sequence, remove, contributorId, apiKey)
+        result = asjr.removeId(sequence, removePartnerId, contributorId, apiKey)
       }
       catch (Exception e) {
         e.printStackTrace();
@@ -130,7 +130,7 @@ final def TAB = '\t'
 def bPartnerId = false
 if ((csvFileName) || (tsvFileName)) {
 
-   
+   // set data form file
     List<List<String>> glycanList = new ArrayList<ArrayList<String>>();
     try {
 
@@ -200,70 +200,105 @@ if ((csvFileName) || (tsvFileName)) {
         }
     }
 
+    if (removePartnerId == "file") {
+        for (List<String> glycan : glycanList) {
 
-    for (List<String> glycan : glycanList) {
+            if (glycan.size() == 2) {
+                partnerId = glycan[0]
+                sequence = glycan[1]
 
-        if (glycan.size() == 2) {
-            partnerId = glycan[0]
-            sequence = glycan[1]
-        }
-        else if (glycan.size() == 1) {
-            sequence = glycan[0]
-        }
-
-        if (sequence) {
-
-            if (oFormat != 'tsv' && oFormat != 'csv') {
-                println "Registering sequence: " + sequence
-            }  
-
-            if (partnerId) {
-                if (oFormat != 'tsv' && oFormat != 'csv') {
-                    println "Partner Id: ${partnerId}"
-                }
-
-                try {
-                    result = asjr.register(sequence, partnerId, contributorId, apiKey)
-                }
-                catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            else {
-                try {
-                    result = asjr.register(sequence, contributorId, apiKey)
-                } 
-                catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            
-            if (oFormat == 'tsv') {
+                if (sequence) {
                     if (partnerId) {
-                        println "${partnerId}\t${result}\t${sequence}"
+                        if (oFormat != 'tsv' && oFormat != 'csv') {
+                            println "Removing partner Accession Number:" + partnerId + "\tsequence: " + sequence
+                        }
+                        try {
+                            result = asjr.removeId(sequence, partnerId, contributorId, apiKey)
+                        }
+                        catch (Exception e) {
+                            println "problem: partner Accession Number:" + partnerId + "\tsequence: " + sequence
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+            else if (glycan.size() == 1) {
+                printIn "Please use your database id in a file.";
+                break;
+            }
+        }
+
+    }
+    else {
+
+        for (List<String> glycan : glycanList) {
+
+            if (glycan.size() == 2) {
+                partnerId = glycan[0]
+                sequence = glycan[1]
+            }
+            else if (glycan.size() == 1) {
+                sequence = glycan[0]
+            }
+
+            if (sequence) {
+
+                if (oFormat != 'tsv' && oFormat != 'csv') {
+                    println "Registering sequence: " + sequence
+                }  
+
+                if (partnerId) {
+                    if (oFormat != 'tsv' && oFormat != 'csv') {
+                        println "Partner Id: ${partnerId}"
+                    }
+
+                    try {
+                        result = asjr.register(sequence, partnerId, contributorId, apiKey)
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                else {
+                    try {
+                        result = asjr.register(sequence, contributorId, apiKey)
+                    } 
+                    catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                
+                if (oFormat == 'tsv') {
+                        if (partnerId) {
+                            println "${partnerId}\t${result}\t${sequence}"
+                        }
+                        else {
+                            println "${result}\t${sequence}"
+                        }
+                }
+                else if (oFormat == 'csv') {
+                    if (partnerId) {
+                            println "\"${partnerId}\",\"${result}\",\"${sequence}\""
                     }
                     else {
-                        println "${result}\t${sequence}"
+                            println "\"${result}\",\"${sequence}\""
                     }
-            }
-            else if (oFormat == 'csv') {
-                if (partnerId) {
-                        println "\"${partnerId}\",\"${result}\",\"${sequence}\""
                 }
                 else {
-                        println "\"${result}\",\"${sequence}\""
+                    if (partnerId) {
+                        println "Accession Number of ${partnerId} is ${result}"
+                    }
+                    else {
+                        println "Accession Number of ${sequence} is ${result}"
+                    }
                 }
             }
-            else {
-                if (partnerId) {
-                    println "Accession Number of ${partnerId} is ${result}"
-                }
-                else {
-                    println "Accession Number of ${sequence} is ${result}"
-                }
-            }
+            partnerId = false
+            sequence = false
         }
-        partnerId = false
-        sequence = false
     }
+
+
+
+
 }
