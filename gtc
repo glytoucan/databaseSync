@@ -238,12 +238,25 @@ if ((csvFileName) || (tsvFileName)) {
 
                 if (sequence) {
                     if (partnerId) {
-                        if (oFormat != 'tsv' && oFormat != 'csv') {
-                            println "Removing partner Accession Number:" + partnerId + "\tsequence: " + sequence
-                        }
+                        //if (oFormat != 'tsv' && oFormat != 'csv') {
+                        //    println "Removing partner Accession Number:" + partnerId + "\tsequence: " + sequence
+                        //}
                         try {
                             result = asjr.removeId(sequence, partnerId, contributorId, apiKey)
-                            println "Removing partner Accession Number:" + partnerId + "\tsequence: " + sequence
+                            
+                            if (oFormat == 'tsv') {
+                                    if (partnerId) {
+                                        println "Removing partner Accession Number:\t${partnerId}\t${sequence}\t${result}"
+                                    }
+                            }
+                            else if (oFormat == 'csv') {
+                                if (partnerId) {
+                                        println "\"Removing partner Accession Number\",\"${partnerId}\",\"${sequence}\",\"${result}\""
+                                }
+                            }
+                            else {
+                                println "Removing partner Accession Number of ${partnerId} is ${result}"
+                            }
                         }
                         catch (Exception e) {
                             println "problem: partner Accession Number:" + partnerId + "\tsequence: " + sequence
