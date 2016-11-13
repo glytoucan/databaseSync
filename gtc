@@ -145,14 +145,14 @@ if (sequence) {
     }
 }
 import org.apache.commons.csv.CSVParser
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.csv.CSVFormat
+import org.apache.commons.csv.CSVRecord
 import static org.apache.commons.csv.CSVFormat.*
 import java.nio.file.Paths
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Path;
-import java.util.List;
+import java.io.IOException
+import java.nio.charset.Charset
+import java.nio.file.Path
+import java.util.List
 
 
 final def TAB = '\t'
@@ -160,7 +160,7 @@ def bPartnerId = false
 if ((csvFileName) || (tsvFileName)) {
 
    // set data form file
-    List<List<String>> glycanList = new ArrayList<ArrayList<String>>();
+    List<List<String>> glycanList = new ArrayList<ArrayList<String>>()
     try {
 
         if (csvFileName) { 
@@ -243,6 +243,7 @@ if ((csvFileName) || (tsvFileName)) {
                         }
                         try {
                             result = asjr.removeId(sequence, partnerId, contributorId, apiKey)
+                            println "Removing partner Accession Number:" + partnerId + "\tsequence: " + sequence
                         }
                         catch (Exception e) {
                             println "problem: partner Accession Number:" + partnerId + "\tsequence: " + sequence
