@@ -44,6 +44,34 @@ def metadata = opt.m
 def removePartnerId = opt.r
 def asjr = new AntiSpringJavaRest()
 
+
+// check input format
+if (sequence){
+    if (tsvFileName){
+        println "Please check input format."
+        return
+    }
+    if (csvFileName){
+        println "Please check input format."
+        return
+    }
+}
+if (tsvFileName){
+    if (sequence){
+        println "Please check input format."
+        return
+    }
+}
+if (csvFileName){
+    if (sequence){
+        println "Please check input format."
+        return
+    }
+}
+
+
+// start
+
 if (metadata){
     if (metadata.contains('u')) {    
     println "User ID: ${contributorId}"
@@ -125,6 +153,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.List;
+
 
 final def TAB = '\t'
 def bPartnerId = false
@@ -223,8 +252,8 @@ if ((csvFileName) || (tsvFileName)) {
                 }
             }
             else if (glycan.size() == 1) {
-                printIn "Please use your database id in a file.";
-                break;
+                println "Please use your database id in a file."
+                return;
             }
         }
 
