@@ -44,6 +44,20 @@ def metadata = opt.m
 def removePartnerId = opt.r
 def asjr = new AntiSpringJavaRest()
 
+// check contributorId and apiKey
+if (contributorId){
+}
+else {
+    println "Please check contributorId."
+    return
+}
+
+if (apiKey){
+}
+else {
+    println "Please check apiKey."
+    return
+}
 
 // check input format
 if (sequence){
