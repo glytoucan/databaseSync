@@ -3,21 +3,18 @@
 @GrabResolver(name='glycoinfo', root='http://nexus.glycoinfo.org/content/groups/public/')
 @GrabResolver(name='glycoinfo-snapshots', root='http://nexus.glycoinfo.org/content/repositories/snapshots/')
 //@Grab('org.glytoucan:client:1.2.5-TOCO-SNAPSHOT')
-@Grab( group='org.glytoucan', 
-       module='client', 
-       version='1.2.5-TOCO-SNAPSHOT', 
-       changing=true ) 
+@Grab( group='org.glytoucan',
+       module='client',
+       version='1.2.6-TOCO-SNAPSHOT',
+       changing=true )
 @Grab('org.apache.commons:commons-csv:1.2')
-
 import org.glytoucan.client.AntiSpringJavaRest
 
 def cli = new CliBuilder(
-   usage: 'gtc -s sequence or -c csvFileName -u contributorId -a apiKey ',
+   usage: 'gtc -s sequence or -c csvFileName -u contributorId -a apiKey -o outputFormat -m uaf',
    header: '\nAvailable options (use -h for help):\n',
    footer: '\nInformation provided via above options is used to generate printed string.\n')
-
 import org.apache.commons.cli.Option
-
 cli.with
 {
    h(longOpt: 'help', 'usage information', required: false)
@@ -25,64 +22,341 @@ cli.with
    c(longOpt: 'csvFileName', 'CSV file name', args: 1, required: false)
    u(longOpt: 'contributorId', 'Contribuor Id', args: 1, required: true)
    a(longOpt: 'apiKey', 'API Key', args: 1, required: true)
-   p(longOpt: 'partnerId', 'partnerId', args: 1, required: false)
+   p(longOpt: 'partnerId', 'partner accession number', args: 1, required: false)
+   // '-o tsv'' or '-o csv''
+   o(longOpt: 'outputFormat', 'output format: tsv or csv', args: 1, required: false)
+   t(longOpt: 'tsvFileName', 'TSV file name', args: 1, required: false)
+   r(longOpt: 'remove', 'remove partner accession number. if use data in a file, -r file', args: 1, required: false)
+   // '-m uaf'; u: contributorId, a: apiKey, f: csvFileName or tsvFileName, h: header
+   // header = partnerId,Accession Number, sequence
+   m(longOpt: 'output metadata', 'u: contributorId, a: apiKey, f: csvFileName or tsvFileName, h: header', args: 1, required: false)
 }
 def opt = cli.parse(args)
-
 if (!opt) return
 if (opt.h) cli.usage()
-
 def sequence = opt.s
 def csvFileName = opt.c
 def contributorId = opt.u
 def apiKey = opt.a
 def partnerId = opt.p
+def oFormat = opt.o
+def tsvFileName = opt.t
+def metadata = opt.m
+def removePartnerId = opt.r
 def asjr = new AntiSpringJavaRest()
-println "User ID: ${contributorId}"
-println "Api Key: ${apiKey}"
 
-if (sequence) {
-	println "Registering sequence: ${sequence}"
-
-	String result;
-	if (partnerId) {
-		println "Partner Id: ${partnerId}"
-		result = asjr.register(sequence, partnerId, contributorId, apiKey)
-	} else {
-		result = asjr.register(sequence, contributorId, apiKey)
-	}
-
-	println "Accession Number of ${sequence} is ${result}";
+// check contributorId and apiKey
+if (contributorId){
+}
+else {
+    println "Please check contributorId."
+    return
 }
 
+if (apiKey){
+}
+else {
+    println "Please check apiKey."
+    return
+}
+
+// check input format
+if (sequence){
+    if (tsvFileName){
+        println "Please check input format."
+        return
+    }
+    if (csvFileName){
+        println "Please check input format."
+        return
+    }
+}
+if (tsvFileName){
+    if (sequence){
+        println "Please check input format."
+        return
+    }
+}
+if (csvFileName){
+    if (sequence){
+        println "Please check input format."
+        return
+    }
+}
+
+
+// start
+
+if (metadata){
+    if (metadata.contains('u')) {    
+    println "User ID: ${contributorId}"
+    }
+    if (metadata.contains('a')) {
+    println "Api Key: ${apiKey}"
+    }
+}
+
+if (sequence) {
+    if (oFormat != 'tsv' && oFormat != 'csv') {
+        println "Registering sequence: ${sequence}"
+    }
+    String result;
+    if (partnerId) {
+        if (oFormat != 'tsv' && oFormat != 'csv') {
+            println "Partner Accession Number: ${partnerId}"
+        }
+
+        try {
+          result = asjr.register(sequence, partnerId, contributorId, apiKey)
+        }
+        catch (Exception e) {
+          e.printStackTrace();
+        }
+
+    } else {
+        try {
+            result = asjr.register(sequence, contributorId, apiKey)
+        } 
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    if (removePartnerId) {
+      if (oFormat != 'tsv' && oFormat != 'csv') {
+         println "Removing partner Accession Number: ${removePartnerId}"
+      }
+      try {
+        result = asjr.removeId(sequence, removePartnerId, contributorId, apiKey)
+      }
+      catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+
+    if (oFormat == 'tsv') {
+        if (partnerId) {
+            println "${result}\t${partnerId}\t${sequence}"
+        }
+        else {
+            println "${result}\t${sequence}"
+        }
+    }
+    else if (oFormat == 'csv') {
+        if (partnerId) {
+            println "\"${result}\",\"${partnerId}\",\"${sequence}\""
+        }
+        else {
+            println "\"${result}\",\"${sequence}\""
+        }
+    }
+    else {
+        if (partnerId) {  
+            println "Accession Number of ${partnerId}: ${sequence} is ${result}"
+        }
+        else {
+            println "Accession Number of ${sequence} is ${result}"
+        }
+    }
+}
 import org.apache.commons.csv.CSVParser
+import org.apache.commons.csv.CSVFormat
+import org.apache.commons.csv.CSVRecord
 import static org.apache.commons.csv.CSVFormat.*
 import java.nio.file.Paths
+import java.io.IOException
+import java.nio.charset.Charset
+import java.nio.file.Path
+import java.util.List
 
-if (csvFileName) {
-	println "Reading file: ${csvFileName}"
 
-	def listing = []
+final def TAB = '\t'
+def bPartnerId = false
+if ((csvFileName) || (tsvFileName)) {
 
-	Paths.get(csvFileName).withReader { reader ->
-	    CSVParser csv = new CSVParser(reader, DEFAULT.withHeader())
- 
-	    for (record in csv.iterator()) {
-        	listing << (record.toMap() as Expando)
-    	    }
-	}
-	for (Expando mapLine : listing) {
-		Map props = mapLine.getProperties();
-		for (fieldProp in props) {
-  			println "column " + fieldProp.key
-			println "Registering sequence: " + fieldProp.value
-			if (partnerId) {
-				println "Partner Id: ${partnerId}"
-				result = asjr.register(fieldProp.value, partnerId, contributorId, apiKey)
-			} else {
-				result = asjr.register(fieldProp.value, contributorId, apiKey)
-			}
-			println "Accession Number of ${fieldProp.value} is ${result}";
-		}
-	}
+   // set data form file
+    List<List<String>> glycanList = new ArrayList<ArrayList<String>>()
+    try {
+
+        if (csvFileName) { 
+            Paths.get(csvFileName).withReader { reader ->
+            CSVParser csv = new CSVParser(reader, DEFAULT.withHeader())
+
+                for (record in csv.iterator()) {
+                    if (record.size() == 2) {
+                        glycanList.push( [record.get(0), record.get(1) ] )
+                    }
+                    else if (record.size() == 1) {
+                        glycanList.push( [record.get(0) ] )
+                    }
+                }
+            }
+        }
+        if (tsvFileName) { 
+            new File(tsvFileName).eachWithIndex {
+                String line, int i -> 
+                if (i == 0) { return }
+                else {
+
+                    contents = line.split(TAB) 
+                    if (contents.size() == 2) {
+                        glycanList.push( [ contents[0], contents[1] ])
+                        bPartnerId = true
+                    }
+                    else if (contents.size() == 1) {
+                        glycanList.push( [ contents[0] ])
+                    }
+                }
+            }
+        }
+
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+
+    if (metadata){
+        if (metadata.contains('f')) { 
+            if (csvFileName) {
+                println "Reading file: ${csvFileName}"
+            }
+            else if (tsvFileName) {
+                println "Reading file: ${tsvFileName}"
+            }
+        }
+        if (metadata.contains('h')) {
+            if (oFormat == 'tsv') {
+                if (bPartnerId == true) {
+                    println "partnerId\tAccession Number\tsequence"
+                }
+                else if (bPartnerId == false) {
+                    println "Accession Number\tsequence"
+                }
+            }
+            else if (oFormat == 'csv') {
+                if (bPartnerId == true) {
+                    println "\"partnerId\",\"Accession Number\",\"sequence\""
+                }
+                else if (bPartnerId == false) {
+                    println "\"Accession Number\",\"sequence\""
+                }
+            }
+        }
+    }
+
+    if (removePartnerId == "file") {
+        for (List<String> glycan : glycanList) {
+
+            if (glycan.size() == 2) {
+                partnerId = glycan[0]
+                sequence = glycan[1]
+
+                if (sequence) {
+                    if (partnerId) {
+                        //if (oFormat != 'tsv' && oFormat != 'csv') {
+                        //    println "Removing partner Accession Number:" + partnerId + "\tsequence: " + sequence
+                        //}
+                        try {
+                            result = asjr.removeId(sequence, partnerId, contributorId, apiKey)
+                            
+                            if (oFormat == 'tsv') {
+                                    if (partnerId) {
+                                        println "Removing partner Accession Number:\t${partnerId}\t${sequence}\t${result}"
+                                    }
+                            }
+                            else if (oFormat == 'csv') {
+                                if (partnerId) {
+                                        println "\"Removing partner Accession Number\",\"${partnerId}\",\"${sequence}\",\"${result}\""
+                                }
+                            }
+                            else {
+                                println "Removing partner Accession Number of ${partnerId} is ${result}"
+                            }
+                        }
+                        catch (Exception e) {
+                            println "problem: partner Accession Number:" + partnerId + "\tsequence: " + sequence
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+            else if (glycan.size() == 1) {
+                println "Please use your database id in a file."
+                return;
+            }
+        }
+
+    }
+    else {
+
+        for (List<String> glycan : glycanList) {
+
+            if (glycan.size() == 2) {
+                partnerId = glycan[0]
+                sequence = glycan[1]
+            }
+            else if (glycan.size() == 1) {
+                sequence = glycan[0]
+            }
+
+            if (sequence) {
+
+                if (oFormat != 'tsv' && oFormat != 'csv') {
+                    println "Registering sequence: " + sequence
+                }  
+
+                if (partnerId) {
+                    if (oFormat != 'tsv' && oFormat != 'csv') {
+                        println "Partner Id: ${partnerId}"
+                    }
+
+                    try {
+                        result = asjr.register(sequence, partnerId, contributorId, apiKey)
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                else {
+                    try {
+                        result = asjr.register(sequence, contributorId, apiKey)
+                    } 
+                    catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                
+                if (oFormat == 'tsv') {
+                        if (partnerId) {
+                            println "${partnerId}\t${result}\t${sequence}"
+                        }
+                        else {
+                            println "${result}\t${sequence}"
+                        }
+                }
+                else if (oFormat == 'csv') {
+                    if (partnerId) {
+                            println "\"${partnerId}\",\"${result}\",\"${sequence}\""
+                    }
+                    else {
+                            println "\"${result}\",\"${sequence}\""
+                    }
+                }
+                else {
+                    if (partnerId) {
+                        println "Accession Number of ${partnerId} is ${result}"
+                    }
+                    else {
+                        println "Accession Number of ${sequence} is ${result}"
+                    }
+                }
+            }
+            partnerId = false
+            sequence = false
+        }
+    }
+
+
+
+
 }
