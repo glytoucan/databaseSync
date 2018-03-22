@@ -1,4 +1,3 @@
-@GrabConfig(autoDownload=false)
 @GrabResolver(name='glycoinfo', root='http://nexus.glycoinfo.org/content/groups/public/')
 @GrabResolver(name='glycoinfo-snapshots', root='http://nexus.glycoinfo.org/content/repositories/snapshots/')
 @Grab('org.glytoucan:client:1.2.5-TOCO-SNAPSHOT')
