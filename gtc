@@ -1,4 +1,4 @@
-#!/Users/aoki/.sdkman/candidates/groovy/current/bin/groovy
+#!/usr/bin/groovy
 
 @GrabResolver(name='glycoinfo', root='http://nexus.glycoinfo.org/content/groups/public/')
 @GrabResolver(name='glycoinfo-snapshots', root='http://nexus.glycoinfo.org/content/repositories/snapshots/')
