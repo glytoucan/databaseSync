@@ -5,7 +5,7 @@
 //@Grab('org.glytoucan:client:1.2.5-TOCO-SNAPSHOT')
 @Grab( group='org.glytoucan',
        module='client',
-       version='1.2.6-TOCO-SNAPSHOT',
+       version='1.2.11-TOCO-SNAPSHOT',
        changing=true )
 @Grab('org.apache.commons:commons-csv:1.2')
 import org.glytoucan.client.AntiSpringJavaRest
@@ -152,10 +152,10 @@ if (sequence) {
     }
     else {
         if (partnerId) {  
-            println "Accession Number of ${partnerId}: ${sequence} is ${result}"
+            println "Complete list of all submissions can be found at https://glytoucan.org/Users/structure\nRegistration of sequence:>${sequence}< using id:>${partnerId}< output:>${result}<.  If this structure is already registered, it will be an Accession Number, which can be found here: https://glytoucan.org/Structures/Glycans/${result}.  Otherwise, the new structure submission details can be found here:  https://glytoucan.org/Structures/Submission/${result}.  In this case, please wait for the validation batch processes to complete before an Accession Number is assigned."  
         }
         else {
-            println "Accession Number of ${sequence} is ${result}"
+            println "Complete list of all submissions can be found at https://glytoucan.org/Users/structure\nRegistration of sequence:>${sequence}< output:>${result}<.  If this structure is already registered, it will be an Accession Number, which can be found here: https://glytoucan.org/Structures/Glycans/${result}.  Otherwise, the new structure submission details can be found here:  https://glytoucan.org/Structures/Submission/${result}.  In this case, please wait for the validation batch processes to complete before an Accession Number is assigned."  
         }
     }
 }
@@ -270,7 +270,7 @@ if ((csvFileName) || (tsvFileName)) {
                                 }
                             }
                             else {
-                                println "Removing partner Accession Number of ${partnerId} is ${result}"
+                                println "Removing partner Accession Number of ${partnerId}.  Please check status at Entries page: https://glytoucan.org/Users/structure"
                             }
                         }
                         catch (Exception e) {
@@ -344,10 +344,10 @@ if ((csvFileName) || (tsvFileName)) {
                 }
                 else {
                     if (partnerId) {
-                        println "Accession Number of ${partnerId} is ${result}"
+                        println "Complete list of all submissions can be found at https://glytoucan.org/Users/structure\nRegistration of sequence:>${sequence}< using id:>${partnerId}< output:>${result}<.  If this structure is already registered, it will be an Accession Number, which can be found here: https://glytoucan.org/Structures/Glycans/${result}.  Otherwise, the new structure submission details can be found here:  https://glytoucan.org/Structures/Submission/${result}.  In this case, please wait for the validation batch processes to complete before an Accession Number is assigned."  
                     }
                     else {
-                        println "Accession Number of ${sequence} is ${result}"
+                        println "Complete list of all submissions can be found at https://glytoucan.org/Users/structure\nRegistration of sequence:>${sequence}< output:>${result}<.  If this structure is already registered, it will be an Accession Number, which can be found here: https://glytoucan.org/Structures/Glycans/${result}.  Otherwise, the new structure submission details can be found here:  https://glytoucan.org/Structures/Submission/${result}.  In this case, please wait for the validation batch processes to complete before an Accession Number is assigned."  
                     }
                 }
             }
