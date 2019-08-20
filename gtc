@@ -1,7 +1,7 @@
 #!/usr/bin/groovy
 
-@GrabResolver(name='glycoinfo', root='http://nexus.glycoinfo.org/content/groups/public/')
-@GrabResolver(name='glycoinfo-snapshots', root='http://nexus.glycoinfo.org/content/repositories/snapshots/')
+@GrabResolver(name='glycoinfo', root='https://nexus.glycoinfo.org/content/groups/public/')
+@GrabResolver(name='glycoinfo-snapshots', root='https://nexus.glycoinfo.org/content/repositories/snapshots/')
 //@Grab('org.glytoucan:client:1.2.5-TOCO-SNAPSHOT')
 @Grab( group='org.glytoucan',
        module='client',
@@ -152,10 +152,10 @@ if (sequence) {
     }
     else {
         if (partnerId) {  
-            println "Complete list of all submissions can be found at https://glytoucan.org/Users/structure\nRegistration of sequence:>${sequence}< using id:>${partnerId}< output:>${result}<.  If this structure is already registered, it will be an Accession Number, which can be found here: https://glytoucan.org/Structures/Glycans/${result}.  Otherwise, the new structure submission details can be found here:  https://glytoucan.org/Structures/Submission/${result}.  In this case, please wait for the validation batch processes to complete before an Accession Number is assigned."  
+            println "Complete list of all submissions can be found at https://glytoucan.org/Users/structure\nRegistration of sequence:>${sequence}< using id:>${partnerId}< output:>${result}<" // TODO: check if the result is an accession number (starts with G and 8 characters) and if so display https://glytoucan.org/Structures/Glycans/${result}.  Otherwise display https://glytoucan.org/Structures/Submission/${result}.
         }
         else {
-            println "Complete list of all submissions can be found at https://glytoucan.org/Users/structure\nRegistration of sequence:>${sequence}< output:>${result}<.  If this structure is already registered, it will be an Accession Number, which can be found here: https://glytoucan.org/Structures/Glycans/${result}.  Otherwise, the new structure submission details can be found here:  https://glytoucan.org/Structures/Submission/${result}.  In this case, please wait for the validation batch processes to complete before an Accession Number is assigned."  
+            println "Complete list of all submissions can be found at https://glytoucan.org/Users/structure\nRegistration of sequence:>${sequence}< output:>${result}<"  
         }
     }
 }
@@ -213,7 +213,6 @@ if ((csvFileName) || (tsvFileName)) {
     } catch (IOException e) {
       e.printStackTrace();
     }
-
 
     if (metadata){
         if (metadata.contains('f')) { 
@@ -344,10 +343,10 @@ if ((csvFileName) || (tsvFileName)) {
                 }
                 else {
                     if (partnerId) {
-                        println "Complete list of all submissions can be found at https://glytoucan.org/Users/structure\nRegistration of sequence:>${sequence}< using id:>${partnerId}< output:>${result}<.  If this structure is already registered, it will be an Accession Number, which can be found here: https://glytoucan.org/Structures/Glycans/${result}.  Otherwise, the new structure submission details can be found here:  https://glytoucan.org/Structures/Submission/${result}.  In this case, please wait for the validation batch processes to complete before an Accession Number is assigned."  
+                        println "Complete list of all submissions can be found at https://glytoucan.org/Users/structure\nRegistration of sequence:>${sequence}< using id:>${partnerId}< output:>${result}<"  
                     }
                     else {
-                        println "Complete list of all submissions can be found at https://glytoucan.org/Users/structure\nRegistration of sequence:>${sequence}< output:>${result}<.  If this structure is already registered, it will be an Accession Number, which can be found here: https://glytoucan.org/Structures/Glycans/${result}.  Otherwise, the new structure submission details can be found here:  https://glytoucan.org/Structures/Submission/${result}.  In this case, please wait for the validation batch processes to complete before an Accession Number is assigned."  
+                        println "Complete list of all submissions can be found at https://glytoucan.org/Users/structure\nRegistration of sequence:>${sequence}< output:>${result}<"  
                     }
                 }
             }
