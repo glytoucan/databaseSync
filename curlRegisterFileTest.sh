@@ -8,5 +8,5 @@ fi
 while read line
 do
   echo ""
-  curl -X POST --header 'Content-Type: application/json' --header 'Accept: application/json' --user $1:$2 -d '{ "sequence": "'$line'" }' 'https://api.gtc.beta.glycosmos.org/glycan/register'
+  curl -X POST --header 'Content-Type: application/json' --header 'Accept: application/json' --user $1:$2 -d '{ "sequence": "'$line'" }' 'https://api.beta.glytoucan.org/glycan/register'
 done < $3
